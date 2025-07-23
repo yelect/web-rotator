@@ -1,36 +1,90 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Website Tab Rotator</title>
+  <meta charset="utf-8">
+  <title>Electra Map Rotator – No External JS</title>
+
+  <!-- 1. Early connections -->
+  <link rel="dns-prefetch" href="https://backend.go-electra.com">
+  <link rel="preconnect"   href="https://backend.go-electra.com" crossorigin>
+
+  <!-- 2. Preload the map HTML document -->
+  <link rel="preload"
+        href="https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e"
+        as="document">
+
+  <!-- 3. Preload static bundles (update with actual names from DevTools) -->
+  <link rel="preload"
+        href="https://backend.go-electra.com/packs/js/904-11acb475713a3c354b63.js"
+        as="script">
+  <link rel="preload"
+        href="https://backend.go-electra.com/packs/js/tv-43ca84669d193ff95164.js"
+        as="script">
+
   <style>
-    html,body { margin:0; padding:0; height:100%; width:100%; }
-    body { display: flex; align-items: center; justify-content: center; }
-    button { font-size: 2em; padding: 1em 2em; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    button {
+      font-size: 2em;
+      padding: 1em 2em;
+    }
+    .preload {
+      width: 1px;
+      height: 1px;
+      border: none;
+      position: absolute;
+      left: -9999px;
+    }
   </style>
 </head>
 <body>
-  <button id="start">Start Rotating in New Tab</button>
-  <script>
-    const sites = [
-      "https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pubembed?start=true&loop=true&delayms=60000",
-      "https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e",
-      "https://my.tikee.io/projects/229864/timelapse/private_share/f754ce0d-2199-47f2-aebd-3cb7c7767047",
-    ];
-    const dwell = 30000; // milliseconds per site
 
-    document.getElementById('start').onclick = function() {
-      let win = window.open(sites[0], '_blank');
-      let i = 1;
-      setInterval(() => {
-        if (win && !win.closed) {
-          win.location.href = sites[i];
-          i = (i + 1) % sites.length;
-        }
-      }, dwell);
-      this.disabled = true;
-      this.innerText = "Running...";
-    };
+  <button id="start">Start Rotator</button>
+
+  <!-- Hidden iframes to keep the map runtime and tiles warm -->
+  <div id="map-preloads">
+    <iframe class="preload"
+            src="https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e"
+            aria-hidden="true"></iframe>
+    <iframe class="preload"
+            src="https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e"
+            aria-hidden="true"></iframe>
+    <iframe class="preload"
+            src="https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e"
+            aria-hidden="true"></iframe>
+  </div>
+
+  <script>
+    (function(){
+      const mapUrl = 'https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e';
+      const sites = [
+        mapUrl,
+        'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pubembed?start=true&loop=true&delayms=60000',
+        'https://my.tikee.io/projects/229864/timelapse/private_share/f754ce0d-2199-47f2-aebd-3cb7c7767047'
+      ];
+      const dwell = 30000; // 30 seconds
+      let idx = 0, win;
+
+      document.getElementById('start').onclick = function(){
+        win = window.open(sites[0], '_blank');
+        idx = 1;
+        this.disabled = true;
+        this.textContent = 'Running…';
+
+        setInterval(() => {
+          if (win && !win.closed) {
+            win.location.href = sites[idx];
+            idx = (idx + 1) % sites.length;
+          }
+        }, dwell);
+      };
+    })();
   </script>
 </body>
 </html>
