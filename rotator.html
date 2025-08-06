@@ -70,26 +70,25 @@
     'https://www.google.com/maps/d/u/0/embed?mid=1fG8w2nxBmiQkhlgSxykH8RwQMaeBVb0&ehbc=2E312F&ll=46.840997703251794%2C8.190445841796858&z=8'
     'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=7000',
   ];
-  // Set dwell times: 120s for mapUrl, 60s for others (in milliseconds)
-  const dwells = sites.map(url => url === mapUrl ? 120000 : 60000);
-
-  let idx = 0, win, timeoutId;
-
-  function rotate() {
-    if (win && !win.closed) {
-      win.location.href = sites[idx];
-      // schedule next rotation based on dwell for the new idx
-      timeoutId = setTimeout(rotate, dwells[idx]);
-      idx = (idx + 1) % sites.length;
-    }
-  }
+  let idx = 0, win, rotator;
 
   document.getElementById('start').onclick = function(){
     win = window.open(sites[0], '_blank');
     idx = 1;
     this.disabled = true;
     this.textContent = 'Running…';
-    timeoutId = setTimeout(rotate, dwells[0]);
+
+    function rotate() {
+      if (win && !win.closed) {
+        win.location.href = sites[idx];
+        // Set dwell: 120s for mapUrl, 60s for others
+        const dwell = (sites[idx] === mapUrl) ? 120000 : 60000;
+        idx = (idx + 1) % sites.length;
+        rotator = setTimeout(rotate, dwell);
+      }
+    }
+    // Start with the appropriate dwell for the first rotation
+    rotator = setTimeout(rotate, (sites[1] === mapUrl) ? 120000 : 60000);
   };
 })();
 </script>
