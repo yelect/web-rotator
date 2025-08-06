@@ -60,33 +60,38 @@
             aria-hidden="true"></iframe>
   </div>
 
-  <script>
-    (function(){
-      const mapUrl = 'https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e';
-      const sites = [
-        mapUrl,
-        'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=10000',
-        'https://docs.google.com/presentation/d/e/2PACX-1vRbkf5uiF8hV0MDI3vxdCelaiIRFaWLWTzH91U0Sls2ydZ84zr---I47v1GYfKdUzOg-tluTfDD-VYH/pub?start=true&loop=true&delayms=30000',
-        'https://my.tikee.io/projects/232996/timelapse/private_share/49d374a7-a9ac-4c29-91f2-5833a4e8c1ec',
-        'https://www.google.com/maps/d/u/0/embed?mid=1fG8w2nxBmiQkhlgSxykH8RwQMaeBVb0&ehbc=2E312F&ll=46.840997703251794%2C8.190445841796858&z=8'
-      ];
-      const dwell = 60000; // 60 seconds
-      let idx = 0, win;
+<script>
+(function(){
+  const mapUrl = 'https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e';
+  const sites = [
+    mapUrl,
+    'https://docs.google.com/presentation/d/e/2PACX-1vRbkf5uiF8hV0MDI3vxdCelaiIRFaWLWTzH91U0Sls2ydZ84zr---I47v1GYfKdUzOg-tluTfDD-VYH/pub?start=true&loop=true&delayms=30000',
+    'https://my.tikee.io/projects/232996/timelapse/private_share/49d374a7-a9ac-4c29-91f2-5833a4e8c1ec',
+    'https://www.google.com/maps/d/u/0/embed?mid=1fG8w2nxBmiQkhlgSxykH8RwQMaeBVb0&ehbc=2E312F&ll=46.840997703251794%2C8.190445841796858&z=8'
+    'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=10000',
+  ];
+  // Set dwell times: 120s for mapUrl, 60s for others (in milliseconds)
+  const dwells = sites.map(url => url === mapUrl ? 120000 : 60000);
 
-      document.getElementById('start').onclick = function(){
-        win = window.open(sites[0], '_blank');
-        idx = 1;
-        this.disabled = true;
-        this.textContent = 'Running…';
+  let idx = 0, win, timeoutId;
 
-        setInterval(() => {
-          if (win && !win.closed) {
-            win.location.href = sites[idx];
-            idx = (idx + 1) % sites.length;
-          }
-        }, dwell);
-      };
-    })();
-  </script>
+  function rotate() {
+    if (win && !win.closed) {
+      win.location.href = sites[idx];
+      // schedule next rotation based on dwell for the new idx
+      timeoutId = setTimeout(rotate, dwells[idx]);
+      idx = (idx + 1) % sites.length;
+    }
+  }
+
+  document.getElementById('start').onclick = function(){
+    win = window.open(sites[0], '_blank');
+    idx = 1;
+    this.disabled = true;
+    this.textContent = 'Running…';
+    timeoutId = setTimeout(rotate, dwells[0]);
+  };
+})();
+</script>
 </body>
 </html>
