@@ -6,7 +6,7 @@
 
   <!-- 1. Early connections -->
   <link rel="dns-prefetch" href="https://backend.go-electra.com">
-  <link rel="preconnect"   href="https://backend.go-electra.com" crossorigin>
+  <link rel="preconnect" href="https://backend.go-electra.com" crossorigin>
 
   <!-- 2. Preload the map HTML document -->
   <link rel="preload"
@@ -60,37 +60,45 @@
             aria-hidden="true"></iframe>
   </div>
 
-<script>
-(function(){
-  const mapUrl = 'https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e';
-  const sites = [
-    mapUrl,
-    'https://docs.google.com/presentation/d/e/2PACX-1vRbkf5uiF8hV0MDI3vxdCelaiIRFaWLWTzH91U0Sls2ydZ84zr---I47v1GYfKdUzOg-tluTfDD-VYH/pub?start=true&loop=true&delayms=30000',
-    'https://my.tikee.io/projects/232996/timelapse/private_share/49d374a7-a9ac-4c29-91f2-5833a4e8c1ec',
-    'https://www.google.com/maps/d/u/0/embed?mid=1fG8w2nxBmiQkhlgSxykH8RwQMaeBVb0&ehbc=2E312F&ll=46.840997703251794%2C8.190445841796858&z=8'
-    'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=7000',
-  ];
-  let idx = 0, win, rotator;
+  <script>
+    (function(){
+      const mapUrl = 'https://backend.go-electra.com/tv/map?loc=alpine&token=dd0417ad0ab021cc37716848ba0b44e';
+      const sites = [
+        mapUrl,
+        'https://docs.google.com/presentation/d/e/2PACX-1vRbkf5uiF8hV0MDI3vxdCelaiIRFaWLWTzH91U0Sls2ydZ84zr---I47v1GYfKdUzOg-tluTfDD-VYH/pub?start=true&loop=true&delayms=30000',
+        'https://my.tikee.io/projects/232996/timelapse/private_share/49d374a7-a9ac-4c29-91f2-5833a4e8c1ec',
+        'https://www.google.com/maps/d/u/0/embed?mid=1fG8w2nxBmiQkhlgSxykH8RwQMaeBVb0&ehbc=2E312F&ll=46.840997703251794%2C8.190445841796858&z=8',
+        'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=10000'
+      ];
+      const dwell = 60000; // 60 seconds
+      let idx = 0, win, holdMap = false;
 
-  document.getElementById('start').onclick = function(){
-    win = window.open(sites[0], '_blank');
-    idx = 1;
-    this.disabled = true;
-    this.textContent = 'Running…';
+      document.getElementById('start').onclick = function(){
+        win = window.open(sites[0], '_blank'); // opens map first
+        idx = 1; // next will be sites[1]
+        this.disabled = true;
+        this.textContent = 'Running…';
 
-    function rotate() {
-      if (win && !win.closed) {
-        win.location.href = sites[idx];
-        // Set dwell: 120s for mapUrl, 60s for others
-        const dwell = (sites[idx] === mapUrl) ? 120000 : 60000;
-        idx = (idx + 1) % sites.length;
-        rotator = setTimeout(rotate, dwell);
-      }
-    }
-    // Start with the appropriate dwell for the first rotation
-    rotator = setTimeout(rotate, (sites[1] === mapUrl) ? 120000 : 60000);
-  };
-})();
-</script>
+        // First rotation waits 120s because we start on the map
+        const firstDelay = dwell * 2;
+
+        setTimeout(() => {
+          setInterval(() => {
+            if (win && !win.closed) {
+              win.location.href = sites[idx];
+
+              // Keep the map for 120s total by holding index once
+              if (sites[idx] === mapUrl && !holdMap) {
+                holdMap = true; // stay on the same idx for one more tick
+              } else {
+                holdMap = false;
+                idx = (idx + 1) % sites.length;
+              }
+            }
+          }, dwell);
+        }, firstDelay);
+      };
+    })();
+  </script>
 </body>
 </html>
