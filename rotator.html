@@ -78,7 +78,7 @@ mapUrl,
 'https://docs.google.com/presentation/d/e/2PACX-1vRjOAXI4N27Lud4-HxzPdFbZh5U9xWKjkmtAQvorDv7rz8GXOgWhvmJTctPAl3MubBNfXa_Nkp2qpSB/pub?start=true&loop=true&delayms=10000'
 ];
 const dwell = 60000; // 60 seconds
-let idx = 0, win, holdMap = false;
+let idx = 0, win;
 
 document.getElementById('start').onclick = function(){
 win = window.open(sites[0], '_blank'); // opens map first
@@ -93,12 +93,9 @@ setTimeout(() => {
 setInterval(() => {
 if (win && !win.closed) {
 win.location.href = sites[idx];
-
-// Keep the map for 120s total by holding index once
-if (sites[idx] === mapUrl && !holdMap) {
-holdMap = true; // stay on the same idx for one more tick
-} else {
-holdMap = false;
+idx = (idx + 1) % sites.length;
+// Skip the map URL if we encounter it during rotation
+if (sites[idx] === mapUrl) {
 idx = (idx + 1) % sites.length;
 }
 }
